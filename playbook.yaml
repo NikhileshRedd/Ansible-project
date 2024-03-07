@@ -50,13 +50,7 @@
         - nodejs
         - npm
       register: npm_install_result
-
-    - name: Install older version of npm
-      become: yes
-      command: npm install -g npm@6.14.15
-      register: npm_install_result
-      ignore_errors: yes
-
+      
     - name: Install dependencies and build React application
       become: yes
       command: |
