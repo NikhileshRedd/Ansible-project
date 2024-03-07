@@ -1,5 +1,5 @@
 - name: Deploy Application
-  hosts: webserver
+  hosts: all
   gather_facts: false
   become: yes
 
@@ -8,6 +8,7 @@
       git:
         repo: https://github.com/NikhileshRedd/reactjs-demo.git
         dest: /home/ubuntu/repos/
+        force: yes
 
     - name: Install Node.js and npm
       package:
@@ -48,28 +49,42 @@
       loop:
         - nodejs
         - npm
+      register: npm_install_result
+
+    - name: Install older version of npm
+      become: yes
+      command: npm install -g npm@6.14.15
+      register: npm_install_result
+      ignore_errors: yes
+
+    - name: Install dependencies and build React application
+      become: yes
+      command: |
+        npm install
+        npm run build
+      args:
+
+        chdir: /home/ubuntu/repos/
 
 
-- name: Deploy Application
+- name: Deploy Application (continued)
   hosts: all
   become: yes
 
   tasks:
-    - name: Check if index.html exists
-      stat:
-        path: /home/ubuntu/repos/build/index.html
-      register: index_html_check
-      ignore_errors: yes
+    - name: install apache on remote machine - Ubuntu
+      apt:
+        name: apache2
+        state: latest
+        update_cache: yes
+      when: ansible_os_family == "ubuntu"
 
-    - name: Copy artifact
-      copy:
-        src: /home/ubuntu/repos/build/index.html
-        dest: /var/www/html/
-        remote_src: yes
-      when: index_html_check.stat.exists | default(false)
-
-    - name: Gather service facts
-      service_facts:
+    - name: install apache on remote machine - RedHat
+      yum:
+        name: httpd
+        state: latest
+        update_cache: yes
+      when: ansible_os_family == "RedHat"
 
     - name: Install Apache service on Ubuntu
       service:
@@ -82,4 +97,16 @@
         name: httpd
         state: started
       when: ansible_os_family == 'RedHat'
+
+    - name: Check if index.html exists
+      stat:
+        path: /home/ubuntu/repos/build/index.html
+      register: index_html_check
+      ignore_errors: yes
+
+    - name: Copy artifact
+      copy:
+        src: /home/ubuntu/repos/build/index.html
+        dest: /var/www/html/index.html
+        remote_src: yes
 
