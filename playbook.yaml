@@ -7,7 +7,7 @@
     - name: Clone Git repository on control machine
       git:
         repo: https://github.com/NikhileshRedd/reactjs-demo.git
-        dest: /home/ubuntu/repos/
+        dest: /home/ansible/repos/
         force: yes
 
     - name: Install Node.js and npm
@@ -38,8 +38,8 @@
 
     - name: Clone the repository on servers
       git:
-        repo: /home/ubuntu/repos/
-        dest: /home/ubuntu/repos
+        repo: /home/ansible/repos/
+        dest: /home/ansible/repos
       become: yes
 
     - name: Install Node.js and npm on servers
@@ -64,7 +64,7 @@
         npm run build
       args:
 
-        chdir: /home/ubuntu/repos/
+        chdir: /home/ansible/repos/
 
 
 - name: Deploy Application (continued)
@@ -100,13 +100,13 @@
 
     - name: Check if index.html exists
       stat:
-        path: /home/ubuntu/repos/build/index.html
+        path: /home/ansible/repos/build/index.html
       register: index_html_check
       ignore_errors: yes
 
     - name: Copy artifact
       copy:
-        src: /home/ubuntu/repos/build/index.html
+        src: /home/ansible/repos/build/index.html
         dest: /var/www/html/index.html
         remote_src: yes
 
