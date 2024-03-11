@@ -7,7 +7,7 @@
     - name: Clone Git repository on control machine
       git:
         repo: https://github.com/NikhileshRedd/reactjs-demo.git
-        dest: /home/ansible/repos/
+        dest: /home/ubuntu/repos/
         force: yes
 
     - name: Install Node.js and npm
@@ -17,11 +17,7 @@
       loop:
         - nodejs
         - npm
-
-- name: Setup Environment
-  hosts: all
-  become: yes
-  tasks:
+        
     - name: Ensure git is installed
       package:
         name: git
@@ -38,8 +34,8 @@
 
     - name: Clone the repository on servers
       git:
-        repo: /home/ansible/repos/
-        dest: /home/ansible/repos
+        repo: /home/ubuntu/repos/
+        dest: /home/ubuntu/repos
       become: yes
 
     - name: Install Node.js and npm on servers
@@ -50,22 +46,20 @@
         - nodejs
         - npm
       register: npm_install_result
-      
-    - name: Install dependencies and build React application
+
+    - name: Install dependencies 
       become: yes
-      command: |
-        npm install
-        npm run build
+      command: npm install
       args:
 
-        chdir: /home/ansible/repos/
+        chdir: /home/ubuntu/repos/
 
+    - name: build React application
+      become: yes
+      command: npm run build
+      args:
 
-- name: Deploy Application (continued)
-  hosts: all
-  become: yes
-
-  tasks:
+        chdir: /home/ubuntu/repos/
     - name: install apache on remote machine - Ubuntu
       apt:
         name: apache2
@@ -94,13 +88,13 @@
 
     - name: Check if index.html exists
       stat:
-        path: /home/ansible/repos/build/index.html
+        path: /home/ubuntu/repos/build/index.html
       register: index_html_check
       ignore_errors: yes
 
     - name: Copy artifact
       copy:
-        src: /home/ansible/repos/build/index.html
+        src: /home/ubuntu/repos/build/index.html
         dest: /var/www/html/index.html
         remote_src: yes
 
